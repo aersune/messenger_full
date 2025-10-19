@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:ms_web/bloc/theme_cubit/theme.dart';
+import 'package:ms_web/services/chat_services.dart';
 import 'package:provider/provider.dart';
 import '../provider/chat_service.dart';
+import '../screens/chat_room_screen/bloc/chat_cubit.dart';
 import '../utils/colors.dart';
 import 'card_subtitle.dart';
 
@@ -15,8 +17,9 @@ class FavoritesWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final theme = context.watch<ThemeCubit>().state;
-    final chatProvider = Provider.of<ChatService>(context, listen: false);
+    // final chatProvider = Provider.of<ChatService>(context, listen: false);
     final FirebaseAuth auth = FirebaseAuth.instance;
+    final chatCubit = context.read<ChatCubit>();
 
     return Material(
       color: Colors.transparent,
@@ -71,7 +74,7 @@ class FavoritesWidget extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    CardSubtitle(stream: chatProvider.getMessages(auth.currentUser!.uid, auth.currentUser!.uid))
+                    CardSubtitle(stream: chatCubit.getMessages(auth.currentUser!.uid, auth.currentUser!.uid))
                   ],
                 ),
               ),

@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:ms_web/screens/chat_room_screen/bloc/chat_cubit.dart';
+import 'package:ms_web/services/chat_services.dart';
 import 'package:provider/provider.dart';
-
+import '../bloc/session_cubit.dart';
 import '../bloc/theme_cubit/theme.dart';
-import '../provider/chat_service.dart';
-import '../provider/theme_provider.dart';
 import '../utils/colors.dart';
 
 
@@ -31,10 +31,10 @@ class _UserProfileState extends State<UserProfile> {
 
   @override
   Widget build(BuildContext context) {
-    final prov = context.watch<ChatService>();
-    final prov2 = context.read<ChatService>();
-    final userName = prov.userData.name;
     final theme = context.watch<ThemeCubit>().state;
+    final session = context.read<SessionCubit>().state;
+    final currentUser = session.user;
+    final chatCubit = context.read<ChatCubit>();
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -51,10 +51,10 @@ class _UserProfileState extends State<UserProfile> {
               children: [
                   GestureDetector(
                     onTap: (){
-                      prov.showImagePopup(context, prov.userData.imageUrl);
+                      chatCubit.showImagePopup(context, currentUser.imageUrl);
                     },
                     child: CachedNetworkImage(
-                      imageUrl: prov.userData.imageUrl ,
+                      imageUrl: currentUser!.imageUrl ,
                       placeholder: (context, url) => const CircularProgressIndicator(),
                       errorWidget: (context, url, error) => const Icon(Icons.error),
                       imageBuilder: (context, imageProvider) => CircleAvatar(
@@ -72,7 +72,7 @@ class _UserProfileState extends State<UserProfile> {
                       child: InkWell(
                         borderRadius: BorderRadius.circular(100),
                         onTap: () {
-                          prov.changeImage(context);
+                          chatCubit.changeImage(context);
 
                         },
                         child: Ink(
@@ -103,7 +103,7 @@ class _UserProfileState extends State<UserProfile> {
                   filled: true,
                   fillColor: Colors.white.withOpacity(.2),
                   prefixIcon: const Icon(Icons.person),
-                  hintText: userName,
+                  hintText: currentUser.name,
                 )),
             const SizedBox(
               height: 25,
@@ -115,7 +115,7 @@ class _UserProfileState extends State<UserProfile> {
                   filled: true,
                   fillColor: Colors.white.withOpacity(.2),
                   prefixIcon: const Icon(Icons.email_outlined),
-                  hintText: prov.userData.email,
+                  hintText: currentUser.email,
                 )),
             const SizedBox(
               height: 25,
@@ -142,8 +142,8 @@ class _UserProfileState extends State<UserProfile> {
                       foregroundColor: Colors.black,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                   onPressed: () {
-                    prov2.changeName(nameController.text.trim());
-                    prov2.getUserData();
+                    chatCubit.changeName(nameController.text.trim());
+                    chatCubit.getUserData();
                     nameFocusNode.unfocus();
                   },
                   child: const Text("Save"),

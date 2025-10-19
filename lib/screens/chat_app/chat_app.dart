@@ -1,8 +1,12 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ms_web/bloc/auth_check_bloc/auth_check_bloc.dart';
+import 'package:ms_web/screens/chat_room_screen/bloc/chat_cubit.dart';
 import 'package:provider/provider.dart';
 import '../../auth_check.dart';
+import '../../bloc/session_cubit.dart';
 import '../../bloc/theme_cubit/theme.dart';
 
 import '../../services/auth_services.dart';
@@ -19,8 +23,10 @@ class ChatApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider(create: (_) => SessionCubit(FirebaseAuth.instance, FirebaseFirestore.instance)..init()),
         BlocProvider(create: (_) => ThemeCubit()),
-        BlocProvider(create: (context) => AuthCheckBloc(AuthService())..add(AuthCheckRequested()),),
+        BlocProvider(create: (context) => AuthCheckBloc(AuthService())..add(AuthCheckRequested())),
+        BlocProvider(create: (_) => ChatCubit(FirebaseAuth.instance, FirebaseFirestore.instance))
 
       ],
       child: const MyApp(),
@@ -34,7 +40,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<ThemeCubit, ThemeState>(
-      builder: (context, theme ) {
+      builder: (context, theme) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Chat App',

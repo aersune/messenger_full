@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../bloc/theme_cubit/theme.dart';
 import '../provider/chat_service.dart';
+import '../screens/chat_room_screen/bloc/chat_cubit.dart';
+import '../services/chat_services.dart';
 import '../utils/colors.dart';
 
 class SendMessageWidget extends StatefulWidget {
@@ -17,7 +19,6 @@ class SendMessageWidget extends StatefulWidget {
 }
 
 class _SendMessageWidgetState extends State<SendMessageWidget> {
-  final ChatService _chatService = ChatService();
 
   @override
   Widget build(BuildContext context) {
@@ -25,21 +26,22 @@ class _SendMessageWidgetState extends State<SendMessageWidget> {
         .of(context)
         .size;
     final theme = context.watch<ThemeCubit>().state;
-    final chatProvider = Provider.of<ChatService>(context, listen: false);
-    final chatWatcher = context.watch<ChatService>();
+    final chatCubit = context.read<ChatCubit>();
+    final chatWatcher = context.read<ChatCubit>();
+
     // final chatPro = Provider.of<ChatService>(context);
     void sendMessage() async {
-      if (chatProvider.messageController.text.isNotEmpty) {
-        await _chatService.sendMessage(
+      if (chatCubit.messageController.text.isNotEmpty) {
+        await chatCubit.sendMessage(
           receiverId: widget.receiverUserId,
-          message: chatProvider.messageController.text.trim(),
+          message: chatCubit.messageController.text.trim(),
           isReply: chatWatcher.isReplying,
           repliedMessage: chatWatcher.editingMessage,
           replyMessId: chatWatcher.editingMessageId,
           replyUser: chatWatcher.repliedMessageSenderId,
         );
-        chatProvider.messageController.clear();
-        chatProvider.cancelReply();
+        chatCubit.messageController.clear();
+        chatCubit.cancelReply();
       }
     }
 
@@ -55,7 +57,7 @@ class _SendMessageWidgetState extends State<SendMessageWidget> {
           enabled: true,
           autofocus: false,
           focusNode: chatWatcher.messageFocusNode,
-          controller: chatProvider.messageController,
+          controller: chatCubit.messageController,
           minLines: 1,
           maxLines: 5,
           style: const TextStyle(color: AppColors.light),
@@ -67,15 +69,15 @@ class _SendMessageWidgetState extends State<SendMessageWidget> {
             suffixIcon: IconButton(
                 onPressed: () {
                   if (chatWatcher.isEditing) {
-                    _chatService.updateMessage(
+                    chatCubit.updateMessage(
                         otherUserId: widget.receiverUserId,
                         messageId: chatWatcher.editingMessageId,
-                        newMessage: chatProvider.messageController.text.trim());
-                    chatProvider.messageController.clear();
-                    chatProvider.editingMessageId = "";
-                    chatProvider.messageFocusNode.unfocus();
-                    chatProvider.isEditing = false;
-                    chatProvider.isReplying = false;
+                        newMessage: chatCubit.messageController.text.trim());
+                    chatCubit.messageController.clear();
+                    chatCubit.editingMessageId = "";
+                    chatCubit.messageFocusNode.unfocus();
+                    chatCubit.isEditing = false;
+                    chatCubit.isReplying = false;
                   } else {
                     sendMessage();
                     // chatProvider.messageFocusNode.unfocus();
@@ -97,7 +99,7 @@ class _SendMessageWidgetState extends State<SendMessageWidget> {
               height: 40,
               child: IconButton(
                   onPressed: () {
-                    chatProvider.sendImageMessage(receiverId: widget.receiverUserId,
+                    chatCubit.sendImageMessage(receiverId: widget.receiverUserId,
                         isReply: chatWatcher.isReplying,
                         replyUser: chatWatcher.repliedMessageSenderId,
                         replyMessId: chatWatcher.editingMessageId,

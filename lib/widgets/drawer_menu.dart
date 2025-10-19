@@ -1,14 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:ms_web/screens/chat_room_screen/bloc/chat_cubit.dart';
 import 'package:provider/provider.dart';
+import '../bloc/session_cubit.dart';
 import '../bloc/theme_cubit/theme.dart';
-import '../model/user.dart';
-import '../provider/chat_service.dart';
 import 'dart:io';
 import '../screens/auth/login_screen.dart';
 import '../screens/profile.dart';
-import '../services/auth_services.dart';
 import '../utils/colors.dart';
 
 class DrawerMenu extends StatefulWidget {
@@ -25,14 +24,12 @@ class _DrawerMenuState extends State<DrawerMenu> {
 
   @override
   Widget build(BuildContext context) {
-    final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-    final chatService = context.watch<ChatService>();
+    final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
     final theme = context.watch<ThemeCubit>().state;
-    UserData user = chatService.userData;
     final size = MediaQuery.of(context).size;
-    final chatRead = context.read<ChatService>();
-
-    final imageUrl =  user.imageUrl;
+    final session = context.read<SessionCubit>().state;
+    final chatCubit = context.read<ChatCubit>();
+    final currentUser = session.user;
 
 
     return Drawer(
@@ -53,7 +50,7 @@ class _DrawerMenuState extends State<DrawerMenu> {
                     Positioned.fill(
                       child: GestureDetector(
                         onTap: () {
-                          chatRead.showImagePopup(context, user.imageUrl);
+                          chatCubit.showImagePopup(context, currentUser.imageUrl);
                         },
                         child:
 
@@ -61,7 +58,7 @@ class _DrawerMenuState extends State<DrawerMenu> {
                         CachedNetworkImage(
                           placeholder: (context, url) => const CircularProgressIndicator(),
                           errorWidget: (context, url, error) => const Icon(Icons.error),
-                          imageUrl: user.imageUrl,
+                          imageUrl: currentUser!.imageUrl,
                           imageBuilder: (context, imageProvider) => Container(
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
@@ -79,7 +76,7 @@ class _DrawerMenuState extends State<DrawerMenu> {
                         right: 0,
                         child: InkWell(
                           onTap: () {
-                            chatService.changeImage(context);
+                            chatCubit.changeImage(context);
                           },
                           child: Container(
                               width: 25,
@@ -96,10 +93,10 @@ class _DrawerMenuState extends State<DrawerMenu> {
                   ],
                 ),
                 accountName: Text(
-                  user.name,
+                  currentUser.name,
                   style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                 ),
-                accountEmail: Text(user.email),
+                accountEmail: Text(currentUser.email),
               ),
 
               ListTile(
@@ -156,7 +153,7 @@ class _DrawerMenuState extends State<DrawerMenu> {
 
               ListTile(
                 onTap: () {
-                  _firebaseAuth.signOut();
+                  firebaseAuth.signOut();
                   Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)=>  LoginScreen()));
                 },
                 leading: const Icon(Icons.logout),

@@ -10,7 +10,7 @@ import '../../provider/chat_service.dart';
 import '../../widgets/drawer_menu.dart';
 import '../../widgets/favs_widget.dart';
 import '../../widgets/user_card.dart';
-import '../chat_room_screen.dart';
+import '../chat_room_screen/chat_room_screen.dart';
 import 'bloc/home_bloc.dart';
 
 class HomeScreen extends StatefulWidget {

@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../../model/user.dart';
 import '../../../widgets/favs_widget.dart';
 import '../../../widgets/user_card.dart';
-import '../../chat_room_screen.dart';
+import '../../chat_room_screen/chat_room_screen.dart';
 
 class UserList extends StatelessWidget {
   final List<QueryDocumentSnapshot> users;
